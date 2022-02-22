@@ -58,8 +58,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          var temp = loader.get_data();
-          lst.add([9,temp]);
+          setState(() {
+            var temp = loader.get_data();
+            lst.add([9,temp]);
+          });
+          
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
