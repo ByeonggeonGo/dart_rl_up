@@ -1,43 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_application_1/load_data.dart';
-import 'dart:convert' as convert;
-import 'package:carousel_slider/carousel_slider.dart';
 
-void main() async {
-  DataLoader loader = DataLoader();
-  List lis = await loader.get_coin_list();
-  List<Widget> liswid = lis.map((e) => Text('$e')).toList();
-
-  print(lis.map((e) => print('$e')));
-  print(liswid);
-
-  var demo = ComplicatedImageDemo();
-  demo.data_get(liswid);
-  runApp(MaterialApp(
-    title: "test",
-    home: demo,
-  ));
+void main() {
+  runApp(Myapp());
 }
 
-class ComplicatedImageDemo extends StatelessWidget {
-  List<Widget> llst = [];
-  void data_get(List<Widget> list_1) {
-    llst = list_1;
-  }
+class Myapp extends StatefulWidget {
+  const Myapp({Key? key}) : super(key: key);
+
+  @override
+  State<Myapp> createState() => _MyappState();
+}
+
+class _MyappState extends State<Myapp> {
+  String _text = 'test';
+  final String _url = "http://192.168.0.108:9000/data";
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Complicated image slider demo')),
-      body: Container(
-        child: CarouselSlider(
-          options: CarouselOptions(
-            autoPlay: true,
-            aspectRatio: 2.0,
-            enlargeCenterPage: true,
+    return MaterialApp(
+      title: 'test',
+      home: Scaffold(
+        appBar: AppBar(
+          title: Text('ehrnc playground demo'),
+          centerTitle: true,
+          foregroundColor: Colors.white54,
+          backgroundColor: Colors.blueGrey,
+        ),
+        body: Container(
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                Text(_text),
+                IconButton(
+                  onPressed: () async {
+                    var url2 = Uri.parse("$_url");
+                    var _res = await http.get(url2);
+                    print(_res.body);
+                    setState(() {
+                      _text = _res.body;
+                    });
+                  },
+                  icon: Icon(Icons.print),
+                )
+              ],
+            ),
           ),
-          items: llst,
         ),
       ),
     );
