@@ -20,23 +20,31 @@ def train(model, x, y):
   optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
 def training_loop(model, x, y, validset = None):
-  for epoch in epochs:
-    # Update the model with the single giant batch
-    train(model, x, y)
+    # Keep results for plotting
+    train_loss_results = []
+    val_loss_results = []
+    for epoch in epochs:
+        # Update the model with the single giant batch
+        train(model, x, y)
 
-    # Track this before I update
-    if validset == None:
-        current_loss = loss(y,model(x))
-        print("Epoch %2d: loss=%2.5f" %
-            (epoch, current_loss))
-    else:
-        x_val = validset[0]
-        y_val = validset[1]
+        # Track this before I update
+        if validset == None:
+            current_loss = loss(y,model(x))
+            print("Epoch %2d: loss=%2.5f" %
+                (epoch, current_loss))
+        else:
+            x_val = validset[0]
+            y_val = validset[1]
 
-        current_loss = loss(y_true=y,y_pred=model(x))
-        valid_loss = loss(y_true=y_val,y_pred=model(x_val))
-        print("Epoch %2d: loss=%2.5f  val_loss=%2.5f" %
-            (epoch, current_loss, valid_loss))
+            current_loss = loss(y_true=y,y_pred=model(x))
+            valid_loss = loss(y_true=y_val,y_pred=model(x_val))
+            print("Epoch %2d: loss=%2.5f  val_loss=%2.5f" %
+                (epoch, current_loss, valid_loss))
+            # save loss history
+            train_loss_results.append(current_loss.numpy())
+            val_loss_results.append(valid_loss.numpy())
+    return train_loss_results,val_loss_results
+            
 
 
 path = os.getcwd()
@@ -50,7 +58,6 @@ X_train = scaler.fit_transform(X_train)
 y_train = trainset.values[:,-1]
 # y_train = pd.get_dummies(trainset.values[:,-1]).values
 y_train = tf.convert_to_tensor(y_train, dtype=tf.float32)
-
 
 X_test = testset.values[:,:-1]
 X_test = scaler.transform(X_test)
@@ -105,7 +112,7 @@ for i in range(len(num_perceptron_list)):
     else: pass
 
 dense_model = tf.keras.Model(name="model_1",inputs=inputs, outputs=x)
-dense_model.summary()
+# dense_model.summary()
 
 
 # Define a training loop
@@ -114,16 +121,16 @@ epochs = range(300)
 # print(loss(y_train[:5],dense_model(X_train[:5])))
 # print(loss(y_train[:5], dense_model(X_train[:5])))
 # Do the training
-training_loop(dense_model, X_train, y_train,validset=[X_test,y_test])
+# training_loop(dense_model, X_train, y_train,validset=[X_test,y_test])
 
 
-from sklearn import metrics
-y_pred_test = dense_model(X_test).numpy()
-y_pred_test = np.argmax(y_pred_test, axis=1).tolist()
-# y_test = np.argmax(y_test, axis=1).tolist()
+# from sklearn import metrics
+# y_pred_test = dense_model(X_test).numpy()
+# y_pred_test = np.argmax(y_pred_test, axis=1).tolist()
+# # y_test = np.argmax(y_test, axis=1).tolist()
 
-# Print the confusion matrix
-print(metrics.confusion_matrix(y_test, y_pred_test))
+# # Print the confusion matrix
+# print(metrics.confusion_matrix(y_test, y_pred_test))
 
 
 
@@ -135,6 +142,13 @@ def index():
 @bp.route('/data')
 def getdata():
     return str("pred")
+
+@bp.route('/modelfit')
+def modelfit():
+    # Do the training
+    train_loss, val_loss = training_loop(dense_model, X_train, y_train,validset=[X_test,y_test])
+
+    return str(train_loss)
 
 
 
